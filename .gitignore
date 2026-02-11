@@ -1,0 +1,24 @@
+# ===== ENV FILES =====
+.env
+server/.env
+client/.env
+admin/.env
+
+# ===== NODE =====
+node_modules/
+
+# ===== BUILD FILES =====
+dist/
+build/
+
+# ===== SERVER UPLOADS =====
+server/uploads/
+
+# ===== LOG FILES =====
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ===== OS FILES =====
+.DS_Store
+Thumbs.db
