@@ -74,20 +74,20 @@ function App() {
 
   return (
     <div className="site-wrap">
-      <Navbar />
+      <Navbar data={data} />
 
       <Routes>
-      {/* Main Home Route */}
-      <Route path="/" element={homePage} />
-      <Route path="/dashboard" element={homePage} />
+        {/* Main Home Route */}
+        <Route path="/" element={homePage} />
+        <Route path="/dashboard" element={homePage} />
 
-      {/* Dynamic Project Detail Route */}
-      <Route 
-        path="/projects/:id" 
-        element={<ProjectDetail data={data} />} 
-      />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        {/* Dynamic Project Detail Route */}
+        <Route
+          path="/projects/:id"
+          element={<ProjectDetail data={data} />}
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </div>
   );
 }

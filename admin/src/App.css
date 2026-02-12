@@ -109,7 +109,7 @@
   border-radius: 10px !important;
 }
 
-.admin-form > button[type="submit"] {
+.admin-form>button[type="submit"] {
   width: 100%;
   padding: 12px 18px;
   font-size: 15px;

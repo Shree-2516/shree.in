@@ -17,12 +17,12 @@ exports.updatePortfolio = async (req, res) => {
     let projects = [];
     try {
       let rawProjects = req.body.projects;
-      
+
       // If it's a string, parse it as JSON
       if (typeof rawProjects === 'string') {
         rawProjects = JSON.parse(rawProjects);
       }
-      
+
       // Ensure it's an array
       if (Array.isArray(rawProjects)) {
         // Clean up projects - trim all string fields
@@ -56,12 +56,12 @@ exports.updatePortfolio = async (req, res) => {
     let educations = [];
     try {
       let rawEducations = req.body.educations;
-      
+
       // If it's a string, parse it as JSON
       if (typeof rawEducations === 'string') {
         rawEducations = JSON.parse(rawEducations);
       }
-      
+
       // Ensure it's an array
       if (Array.isArray(rawEducations)) {
         // Clean up educations - trim all string fields
@@ -83,12 +83,12 @@ exports.updatePortfolio = async (req, res) => {
     let experiences = [];
     try {
       let rawExperiences = req.body.experiences;
-      
+
       // If it's a string, parse it as JSON
       if (typeof rawExperiences === 'string') {
         rawExperiences = JSON.parse(rawExperiences);
       }
-      
+
       // Ensure it's an array
       if (Array.isArray(rawExperiences)) {
         // Clean up experiences - trim all string fields
@@ -196,16 +196,16 @@ exports.updatePortfolio = async (req, res) => {
     const projectImageIndexes = Array.isArray(projectImageIndexesRaw)
       ? projectImageIndexesRaw
       : projectImageIndexesRaw != null
-      ? [projectImageIndexesRaw]
-      : [];
+        ? [projectImageIndexesRaw]
+        : [];
 
     // Parse achievement image indexes so files map to their actual achievement slot
     const achievementImageIndexesRaw = req.body.achievementImageIndexes;
     const achievementImageIndexes = Array.isArray(achievementImageIndexesRaw)
       ? achievementImageIndexesRaw
       : achievementImageIndexesRaw != null
-      ? [achievementImageIndexesRaw]
-      : [];
+        ? [achievementImageIndexesRaw]
+        : [];
 
     // 2. Attach uploaded projectImages to the correct project index
     if (req.files?.projectImages) {
@@ -233,14 +233,14 @@ exports.updatePortfolio = async (req, res) => {
 
     // 3. Prepare the final data object
     const data = {};
-    
+
     // Add all form fields except the stringified arrays
     Object.keys(req.body).forEach((key) => {
       if (!["projects", "educations", "experiences", "achievementsList", "aboutFocusItems", "skillCategories", "projectImageIndexes", "achievementImageIndexes"].includes(key)) {
         data[key] = req.body[key];
       }
     });
-    
+
     // Store grouped categories and keep flat skills for backwards compatibility
     const flatSkillsFromCategories = skillCategories.flatMap((group) => group.items);
     const flatSkillsFromText = req.body.skills
@@ -248,9 +248,9 @@ exports.updatePortfolio = async (req, res) => {
       : [];
     const heroSkills = req.body.heroSkills
       ? req.body.heroSkills
-          .split(/\r?\n|,/)
-          .map((s) => s.trim())
-          .filter((s) => s)
+        .split(/\r?\n|,/)
+        .map((s) => s.trim())
+        .filter((s) => s)
       : [];
 
     data.skillCategories = skillCategories;
@@ -263,7 +263,7 @@ exports.updatePortfolio = async (req, res) => {
     data.experiences = experiences; // Use the parsed experiences array
     data.achievementsList = achievementsList;
     data.aboutFocusItems = aboutFocusItems;
-    
+
     console.log("Data to save:", JSON.stringify(data, null, 2));
 
     // 4. Handle Profile Photo and Resume Uploads
@@ -277,7 +277,7 @@ exports.updatePortfolio = async (req, res) => {
 
     // 5. Database logic: Check if portfolio exists to Update or Create
     const existing = await Portfolio.findOne();
-    
+
     if (existing) {
       await Portfolio.findOneAndUpdate({}, data, { new: true, runValidators: false });
     } else {

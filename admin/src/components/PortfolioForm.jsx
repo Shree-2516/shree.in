@@ -29,6 +29,7 @@ export default function PortfolioForm() {
     github: "",
     linkedin: "",
     address: "",
+    adminLoginLink: "",
   });
 
   const [projects, setProjects] = useState([]);
@@ -45,7 +46,7 @@ export default function PortfolioForm() {
   const [profilePreviewUrl, setProfilePreviewUrl] = useState("");
   const [projectPreviewUrls, setProjectPreviewUrls] = useState([]);
   const [achievementPreviewUrls, setAchievementPreviewUrls] = useState([]);
-  
+
   // 1. ADD STATE: Store project-specific images (from Image 5)
   const [projectImages, setProjectImages] = useState([]);
   const [achievementImages, setAchievementImages] = useState([]);
@@ -75,6 +76,7 @@ export default function PortfolioForm() {
       github: res.data.github || "",
       linkedin: res.data.linkedin || "",
       address: res.data.address || "",
+      adminLoginLink: res.data.adminLoginLink || "",
     });
     setProjects(
       (res.data.projects || []).map((project) => ({
@@ -87,11 +89,11 @@ export default function PortfolioForm() {
     setExperiences(res.data.experiences || []);
     const incomingSkillCategories = Array.isArray(res.data.skillCategories)
       ? res.data.skillCategories
-          .filter((item) => typeof item === "object" && item !== null)
-          .map((item) => ({
-            category: item.category || "",
-            items: Array.isArray(item.items) ? item.items.join(", ") : "",
-          }))
+        .filter((item) => typeof item === "object" && item !== null)
+        .map((item) => ({
+          category: item.category || "",
+          items: Array.isArray(item.items) ? item.items.join(", ") : "",
+        }))
       : [];
     if (incomingSkillCategories.length > 0) {
       setSkillCategories(incomingSkillCategories);
@@ -350,9 +352,19 @@ export default function PortfolioForm() {
     });
 
     try {
+      const adminData = JSON.parse(localStorage.getItem("admin"));
+      const token = adminData?.token;
+
+      if (!token) {
+        alert("Session expired. Please login again.");
+        window.location.href = "/";
+        return;
+      }
+
       await axios.post(`${API_BASE_URL}/api/portfolio`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
         },
       });
       setPhoto(null);
@@ -382,357 +394,454 @@ export default function PortfolioForm() {
   };
 
   return (
-    <form className="admin-form" onSubmit={handleSubmit} style={{ maxWidth: "760px", margin: "auto", padding: "24px" }}>
-      <h2>Global Uploads</h2>
-      <div style={{ marginBottom: "10px" }}>
-        <label>Profile Photo: </label>
-        <input type="file" accept="image/*" onChange={(e) => updateProfilePhoto(e.target.files[0])} />
-        {(profilePreviewUrl || profilePhotoPath) ? (
-          <div style={{ marginTop: "8px" }}>
-            <img
-              src={profilePreviewUrl || toAssetUrl(profilePhotoPath)}
-              alt="Profile preview"
-              style={{ width: "84px", height: "84px", objectFit: "cover", borderRadius: "10px", border: "1px solid #ddd" }}
+    <div className="admin-container" style={{ display: "flex", gap: "24px", padding: "24px", maxWidth: "1200px", margin: "0 auto" }}>
+      {/* Sidebar Navigation */}
+      <nav className="admin-sidebar" style={{
+        width: "250px",
+        flexShrink: 0,
+        position: "sticky",
+        top: "24px",
+        height: "fit-content",
+        background: "white",
+        padding: "20px",
+        borderRadius: "16px",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+        border: "1px solid #dfe7f2",
+        display: "flex",
+        flexDirection: "column",
+        gap: "8px"
+      }}>
+        <h3 style={{ margin: "0 0 16px 0", fontSize: "1.1rem", color: "#0f172a" }}>Navigation</h3>
+        {["Global", "Basic Info", "Skills", "Projects", "Experience", "Education", "Achievements", "Contact"].map((section) => (
+          <a
+            key={section}
+            href={`#section-${section.toLowerCase().replace(" ", "-")}`}
+            style={{
+              padding: "10px 14px",
+              borderRadius: "8px",
+              textDecoration: "none",
+              color: "#334155",
+              fontWeight: "500",
+              background: "transparent",
+              transition: "all 0.2s",
+              display: "block"
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.background = "#f1f5f9";
+              e.target.style.color = "#0f172a";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = "transparent";
+              e.target.style.color = "#334155";
+            }}
+          >
+            {section}
+          </a>
+        ))}
+        <button
+          type="submit"
+          form="portfolio-form"
+          style={{
+            marginTop: "16px",
+            padding: "12px",
+            background: "#007bff",
+            color: "white",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontWeight: "600",
+            width: "100%"
+          }}
+        >
+          Save Portfolio
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            localStorage.removeItem("admin");
+            window.location.href = "/";
+          }}
+          style={{
+            marginTop: "8px",
+            padding: "12px",
+            background: "#dc3545",
+            color: "white",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontWeight: "600",
+            width: "100%"
+          }}
+        >
+          Logout
+        </button>
+      </nav>
+
+      <form id="portfolio-form" className="admin-form" onSubmit={handleSubmit} style={{ flex: 1, padding: "24px" }}>
+        <h2 id="section-global">Global Uploads</h2>
+        <div style={{ marginBottom: "10px" }}>
+          <label>Profile Photo: </label>
+          <input type="file" accept="image/*" onChange={(e) => updateProfilePhoto(e.target.files[0])} />
+          {(profilePreviewUrl || profilePhotoPath) ? (
+            <div style={{ marginTop: "8px" }}>
+              <img
+                src={profilePreviewUrl || toAssetUrl(profilePhotoPath)}
+                alt="Profile preview"
+                style={{ width: "84px", height: "84px", objectFit: "cover", borderRadius: "10px", border: "1px solid #ddd" }}
+              />
+            </div>
+          ) : null}
+        </div>
+        <div style={{ marginBottom: "20px" }}>
+          <label>Resume (PDF): </label>
+          <input type="file" accept="application/pdf" onChange={(e) => setResume(e.target.files[0])} />
+          {resume ? <p style={{ margin: "8px 0 0 0", fontSize: "12px" }}>Selected: {resume.name}</p> : null}
+          {!resume && resumePath ? (
+            <a href={toAssetUrl(resumePath)} target="_blank" rel="noreferrer" style={{ display: "inline-block", marginTop: "8px", fontSize: "12px" }}>
+              View current resume
+            </a>
+          ) : null}
+        </div>
+        <div style={{ marginBottom: "20px" }}>
+          <label>Admin Login Link: </label>
+          <input
+            name="adminLoginLink"
+            value={form.adminLoginLink}
+            onChange={handleChange}
+            placeholder="https://shree.in/admin"
+            style={inputStyle}
+          />
+        </div>
+
+        <h2 id="section-basic-info" style={{ marginTop: "40px" }}>Basic Info</h2>
+        <input name="name" value={form.name} onChange={handleChange} placeholder="Name" style={inputStyle} />
+        <input name="tagline" value={form.tagline} onChange={handleChange} placeholder="Tagline (e.g., Full Stack Developer)" style={inputStyle} />
+        <textarea
+          name="heroSkills"
+          value={form.heroSkills}
+          onChange={handleChange}
+          placeholder={"Hero Skills (shown in hero section chips)\ncomma separated or one per line"}
+          style={inputStyle}
+        />
+        <textarea
+          name="about"
+          value={form.about}
+          onChange={handleChange}
+          placeholder="About paragraph"
+          style={inputStyle}
+        />
+        <input
+          name="aboutKicker"
+          value={form.aboutKicker}
+          onChange={handleChange}
+          placeholder="About kicker (e.g., Get to know me)"
+          style={inputStyle}
+        />
+        <input
+          name="aboutTitle"
+          value={form.aboutTitle}
+          onChange={handleChange}
+          placeholder="About title (e.g., About Me)"
+          style={inputStyle}
+        />
+        <input
+          name="aboutFocusTitle"
+          value={form.aboutFocusTitle}
+          onChange={handleChange}
+          placeholder="Focus section title (e.g., Current Focus)"
+          style={inputStyle}
+        />
+        <textarea
+          name="aboutFocusItems"
+          value={form.aboutFocusItems}
+          onChange={handleChange}
+          placeholder={"Focus items (one per line)\nComputer Engineering Student\nFull-Stack Python + MERN"}
+          style={{ ...inputStyle, minHeight: "110px" }}
+        />
+        <textarea
+          name="aboutQuote"
+          value={form.aboutQuote}
+          onChange={handleChange}
+          placeholder='About quote (without quotes), e.g. Building meaningful software and improving every single day.'
+          style={inputStyle}
+        />
+        <h3 id="section-skills" style={{ margin: "32px 0 16px" }}>Skills Categories</h3>
+        {skillCategories.map((item, i) => (
+          <div key={i} style={{ border: "1px solid #ddd", padding: 15, marginBottom: 15, borderRadius: "8px" }}>
+            <input
+              name="category"
+              placeholder="Category (e.g., Programming)"
+              value={item.category}
+              onChange={(e) => handleSkillCategoryChange(i, e)}
+              style={inputStyle}
+            />
+            <textarea
+              name="items"
+              placeholder="Skills (comma separated or one per line)"
+              value={item.items}
+              onChange={(e) => handleSkillCategoryChange(i, e)}
+              style={inputStyle}
+            />
+            <button
+              type="button"
+              onClick={() => removeSkillCategory(i)}
+              style={{ padding: "5px 10px", background: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+            >
+              Remove Category
+            </button>
+          </div>
+        ))}
+        <button type="button" onClick={addSkillCategory} style={{ marginBottom: "20px" }}>
+          Add Skill Category
+        </button>
+
+        <h2 id="section-projects" style={{ marginTop: "40px" }}>Projects</h2>
+        {projects.map((project, i) => (
+          <div key={i} style={{ border: "1px solid #ddd", padding: 15, marginBottom: 15, borderRadius: "8px" }}>
+            {/* 2. ADD IMAGE INPUT: Inside each project card (from Image 5) */}
+            <label style={{ display: "block", marginBottom: "5px" }}>Project Image:</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => updateProjectImage(i, e.target.files[0])}
+              style={{ marginBottom: "10px" }}
+            />
+            {(projectPreviewUrls[i] || project.image) ? (
+              <img
+                src={projectPreviewUrls[i] || toAssetUrl(project.image)}
+                alt="Project preview"
+                style={{ width: "72px", height: "72px", objectFit: "cover", borderRadius: "8px", border: "1px solid #ddd", marginBottom: "10px" }}
+              />
+            ) : null}
+
+            <input
+              name="title"
+              placeholder="Project Title"
+              value={project.title}
+              onChange={(e) => handleProjectChange(i, e)}
+              style={inputStyle}
+            />
+            <textarea
+              name="problemStatement"
+              placeholder="Problem Statement (shown in project detail page under title)"
+              value={project.problemStatement || ""}
+              onChange={(e) => handleProjectChange(i, e)}
+              style={inputStyle}
+            />
+            <textarea
+              name="description"
+              placeholder="Description"
+              value={project.description}
+              onChange={(e) => handleProjectChange(i, e)}
+              style={inputStyle}
+            />
+            <textarea
+              name="detailedInfo"
+              placeholder="Detailed Project Info (shown only on project detail page)"
+              value={project.detailedInfo || ""}
+              onChange={(e) => handleProjectChange(i, e)}
+              style={{ ...inputStyle, minHeight: "120px" }}
+            />
+            <input
+              name="tech"
+              placeholder="Tech Stack"
+              value={project.tech}
+              onChange={(e) => handleProjectChange(i, e)}
+              style={inputStyle}
+            />
+            <input
+              name="liveLink"
+              placeholder="Live Project URL"
+              value={project.liveLink || ""}
+              onChange={(e) => handleProjectChange(i, e)}
+              style={inputStyle}
+            />
+            <input
+              name="repoLink"
+              placeholder="GitHub Repo URL"
+              value={project.repoLink || ""}
+              onChange={(e) => handleProjectChange(i, e)}
+              style={inputStyle}
             />
           </div>
-        ) : null}
-      </div>
-      <div style={{ marginBottom: "20px" }}>
-        <label>Resume (PDF): </label>
-        <input type="file" accept="application/pdf" onChange={(e) => setResume(e.target.files[0])} />
-        {resume ? <p style={{ margin: "8px 0 0 0", fontSize: "12px" }}>Selected: {resume.name}</p> : null}
-        {!resume && resumePath ? (
-          <a href={toAssetUrl(resumePath)} target="_blank" rel="noreferrer" style={{ display: "inline-block", marginTop: "8px", fontSize: "12px" }}>
-            View current resume
-          </a>
-        ) : null}
-      </div>
+        ))}
 
-      <h2>Basic Info</h2>
-      <input name="name" value={form.name} onChange={handleChange} placeholder="Name" style={inputStyle} />
-      <input name="tagline" value={form.tagline} onChange={handleChange} placeholder="Tagline (e.g., Full Stack Developer)" style={inputStyle} />
-      <textarea
-        name="heroSkills"
-        value={form.heroSkills}
-        onChange={handleChange}
-        placeholder={"Hero Skills (shown in hero section chips)\ncomma separated or one per line"}
-        style={inputStyle}
-      />
-      <textarea
-        name="about"
-        value={form.about}
-        onChange={handleChange}
-        placeholder="About paragraph"
-        style={inputStyle}
-      />
-      <input
-        name="aboutKicker"
-        value={form.aboutKicker}
-        onChange={handleChange}
-        placeholder="About kicker (e.g., Get to know me)"
-        style={inputStyle}
-      />
-      <input
-        name="aboutTitle"
-        value={form.aboutTitle}
-        onChange={handleChange}
-        placeholder="About title (e.g., About Me)"
-        style={inputStyle}
-      />
-      <input
-        name="aboutFocusTitle"
-        value={form.aboutFocusTitle}
-        onChange={handleChange}
-        placeholder="Focus section title (e.g., Current Focus)"
-        style={inputStyle}
-      />
-      <textarea
-        name="aboutFocusItems"
-        value={form.aboutFocusItems}
-        onChange={handleChange}
-        placeholder={"Focus items (one per line)\nComputer Engineering Student\nFull-Stack Python + MERN"}
-        style={{ ...inputStyle, minHeight: "110px" }}
-      />
-      <textarea
-        name="aboutQuote"
-        value={form.aboutQuote}
-        onChange={handleChange}
-        placeholder='About quote (without quotes), e.g. Building meaningful software and improving every single day.'
-        style={inputStyle}
-      />
-      <h3 style={{ margin: "16px 0 10px" }}>Skills Categories</h3>
-      {skillCategories.map((item, i) => (
-        <div key={i} style={{ border: "1px solid #ddd", padding: 15, marginBottom: 15, borderRadius: "8px" }}>
-          <input
-            name="category"
-            placeholder="Category (e.g., Programming)"
-            value={item.category}
-            onChange={(e) => handleSkillCategoryChange(i, e)}
-            style={inputStyle}
-          />
-          <textarea
-            name="items"
-            placeholder="Skills (comma separated or one per line)"
-            value={item.items}
-            onChange={(e) => handleSkillCategoryChange(i, e)}
-            style={inputStyle}
-          />
-          <button
-            type="button"
-            onClick={() => removeSkillCategory(i)}
-            style={{ padding: "5px 10px", background: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
-          >
-            Remove Category
-          </button>
-        </div>
-      ))}
-      <button type="button" onClick={addSkillCategory} style={{ marginBottom: "20px" }}>
-        Add Skill Category
-      </button>
-      <input name="contactEmail" value={form.contactEmail} onChange={handleChange} placeholder="Contact Email" style={inputStyle} />
-      <input name="contactPhone" value={form.contactPhone} onChange={handleChange} placeholder="Contact Number" style={inputStyle} />
-      <input name="github" value={form.github} onChange={handleChange} placeholder="GitHub Link" style={inputStyle} />
-      <input name="linkedin" value={form.linkedin} onChange={handleChange} placeholder="LinkedIn Link" style={inputStyle} />
-      <textarea name="address" value={form.address} onChange={handleChange} placeholder="Address" style={inputStyle} />
+        <button type="button" onClick={addProject} style={{ marginBottom: "20px" }}>
+          ➕ Add Project
+        </button>
 
-      <h2>Achievements</h2>
-      {achievements.map((item, i) => (
-        <div key={i} style={{ border: "1px solid #ddd", padding: 15, marginBottom: 15, borderRadius: "8px" }}>
-          <label style={{ display: "block", marginBottom: "5px" }}>Certificate Image:</label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => updateAchievementImage(i, e.target.files[0])}
-            style={{ marginBottom: "10px" }}
-          />
-          {(achievementPreviewUrls[i] || item.image) ? (
-            <img
-              src={achievementPreviewUrls[i] || toAssetUrl(item.image)}
-              alt="Achievement preview"
-              style={{ width: "72px", height: "72px", objectFit: "cover", borderRadius: "8px", border: "1px solid #ddd", marginBottom: "10px" }}
+        <h2 id="section-experience" style={{ marginTop: "40px" }}>Experience</h2>
+        {experiences.map((exp, i) => (
+          <div key={i} style={{ border: "1px solid #ddd", padding: 15, marginBottom: 15, borderRadius: "8px" }}>
+            <select
+              name="type"
+              value={exp.type}
+              onChange={(e) => handleExperienceChange(i, e)}
+              style={inputStyle}
+            >
+              <option value="Internship">Internship</option>
+              <option value="Job">Job</option>
+              <option value="Freelance">Freelance</option>
+            </select>
+            <input
+              name="company"
+              placeholder="Company Name"
+              value={exp.company}
+              onChange={(e) => handleExperienceChange(i, e)}
+              style={inputStyle}
             />
-          ) : null}
-          <input
-            name="title"
-            placeholder="Achievement Title"
-            value={item.title}
-            onChange={(e) => handleAchievementChange(i, e)}
-            style={inputStyle}
-          />
-          <textarea
-            name="description"
-            placeholder="Achievement Description"
-            value={item.description}
-            onChange={(e) => handleAchievementChange(i, e)}
-            style={inputStyle}
-          />
-          <input
-            name="year"
-            placeholder="Year or Date (e.g., 2025 or Jan 2025)"
-            value={item.year}
-            onChange={(e) => handleAchievementChange(i, e)}
-            style={inputStyle}
-          />
-          <input
-            name="link"
-            placeholder="Link URL (Certificate/Proof)"
-            value={item.link}
-            onChange={(e) => handleAchievementChange(i, e)}
-            style={inputStyle}
-          />
-          <button
-            type="button"
-            onClick={() => removeAchievement(i)}
-            style={{ padding: "5px 10px", background: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
-          >
-            Remove
-          </button>
-        </div>
-      ))}
-
-      <button type="button" onClick={addAchievement} style={{ marginBottom: "20px" }}>
-        Add Achievement
-      </button>
-
-      <h2>Experience</h2>
-      {experiences.map((exp, i) => (
-        <div key={i} style={{ border: "1px solid #ddd", padding: 15, marginBottom: 15, borderRadius: "8px" }}>
-          <select
-            name="type"
-            value={exp.type}
-            onChange={(e) => handleExperienceChange(i, e)}
-            style={inputStyle}
-          >
-            <option value="Internship">Internship</option>
-            <option value="Job">Job</option>
-            <option value="Freelance">Freelance</option>
-          </select>
-          <input
-            name="company"
-            placeholder="Company Name"
-            value={exp.company}
-            onChange={(e) => handleExperienceChange(i, e)}
-            style={inputStyle}
-          />
-          <input
-            name="companyLink"
-            placeholder="Company Website URL"
-            value={exp.companyLink || ""}
-            onChange={(e) => handleExperienceChange(i, e)}
-            style={inputStyle}
-          />
-          <input
-            name="role"
-            placeholder="Role / Position"
-            value={exp.role}
-            onChange={(e) => handleExperienceChange(i, e)}
-            style={inputStyle}
-          />
-          <input
-            name="year"
-            placeholder="Year (e.g., 2023 to 2024)"
-            value={exp.year}
-            onChange={(e) => handleExperienceChange(i, e)}
-            style={inputStyle}
-          />
-          <textarea
-            name="description"
-            placeholder="Short Description / Responsibilities"
-            value={exp.description}
-            onChange={(e) => handleExperienceChange(i, e)}
-            style={inputStyle}
-          />
-          <button
-            type="button"
-            onClick={() => removeExperience(i)}
-            style={{ padding: "5px 10px", background: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
-          >
-            ❌ Remove
-          </button>
-        </div>
-      ))}
-
-      <button type="button" onClick={addExperience} style={{ marginBottom: "20px" }}>
-        ➕ Add Experience
-      </button>
-
-      <h2>Education</h2>
-      {educations.map((edu, i) => (
-        <div key={i} style={{ border: "1px solid #ddd", padding: 15, marginBottom: 15, borderRadius: "8px" }}>
-          <input
-            name="school"
-            placeholder="School / College Name"
-            value={edu.school}
-            onChange={(e) => handleEducationChange(i, e)}
-            style={inputStyle}
-          />
-          <input
-            name="course"
-            placeholder="Course / Degree"
-            value={edu.course}
-            onChange={(e) => handleEducationChange(i, e)}
-            style={inputStyle}
-          />
-          <input
-            name="year"
-            placeholder="Year (e.g., 2023 to 2026)"
-            value={edu.year}
-            onChange={(e) => handleEducationChange(i, e)}
-            style={inputStyle}
-          />
-          <button
-            type="button"
-            onClick={() => removeEducation(i)}
-            style={{ padding: "5px 10px", background: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
-          >
-            ❌ Remove
-          </button>
-        </div>
-      ))}
-
-      <button type="button" onClick={addEducation} style={{ marginBottom: "20px" }}>
-        ➕ Add Education
-      </button>
-
-      <h2>Projects</h2>
-      {projects.map((project, i) => (
-        <div key={i} style={{ border: "1px solid #ddd", padding: 15, marginBottom: 15, borderRadius: "8px" }}>
-          {/* 2. ADD IMAGE INPUT: Inside each project card (from Image 5) */}
-          <label style={{ display: "block", marginBottom: "5px" }}>Project Image:</label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => updateProjectImage(i, e.target.files[0])}
-            style={{ marginBottom: "10px" }}
-          />
-          {(projectPreviewUrls[i] || project.image) ? (
-            <img
-              src={projectPreviewUrls[i] || toAssetUrl(project.image)}
-              alt="Project preview"
-              style={{ width: "72px", height: "72px", objectFit: "cover", borderRadius: "8px", border: "1px solid #ddd", marginBottom: "10px" }}
+            <input
+              name="companyLink"
+              placeholder="Company Website URL"
+              value={exp.companyLink || ""}
+              onChange={(e) => handleExperienceChange(i, e)}
+              style={inputStyle}
             />
-          ) : null}
-          
-          <input
-            name="title"
-            placeholder="Project Title"
-            value={project.title}
-            onChange={(e) => handleProjectChange(i, e)}
-            style={inputStyle}
-          />
-          <textarea
-            name="problemStatement"
-            placeholder="Problem Statement (shown in project detail page under title)"
-            value={project.problemStatement || ""}
-            onChange={(e) => handleProjectChange(i, e)}
-            style={inputStyle}
-          />
-          <textarea
-            name="description"
-            placeholder="Description"
-            value={project.description}
-            onChange={(e) => handleProjectChange(i, e)}
-            style={inputStyle}
-          />
-          <textarea
-            name="detailedInfo"
-            placeholder="Detailed Project Info (shown only on project detail page)"
-            value={project.detailedInfo || ""}
-            onChange={(e) => handleProjectChange(i, e)}
-            style={{ ...inputStyle, minHeight: "120px" }}
-          />
-          <input
-            name="tech"
-            placeholder="Tech Stack"
-            value={project.tech}
-            onChange={(e) => handleProjectChange(i, e)}
-            style={inputStyle}
-          />
-          <input
-            name="liveLink"
-            placeholder="Live Project URL"
-            value={project.liveLink || ""}
-            onChange={(e) => handleProjectChange(i, e)}
-            style={inputStyle}
-          />
-          <input
-            name="repoLink"
-            placeholder="GitHub Repo URL"
-            value={project.repoLink || ""}
-            onChange={(e) => handleProjectChange(i, e)}
-            style={inputStyle}
-          />
-        </div>
-      ))}
+            <input
+              name="role"
+              placeholder="Role / Position"
+              value={exp.role}
+              onChange={(e) => handleExperienceChange(i, e)}
+              style={inputStyle}
+            />
+            <input
+              name="year"
+              placeholder="Year (e.g., 2023 to 2024)"
+              value={exp.year}
+              onChange={(e) => handleExperienceChange(i, e)}
+              style={inputStyle}
+            />
+            <textarea
+              name="description"
+              placeholder="Short Description / Responsibilities"
+              value={exp.description}
+              onChange={(e) => handleExperienceChange(i, e)}
+              style={inputStyle}
+            />
+            <button
+              type="button"
+              onClick={() => removeExperience(i)}
+              style={{ padding: "5px 10px", background: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+            >
+              ❌ Remove
+            </button>
+          </div>
+        ))}
 
-      <button type="button" onClick={addProject} style={{ marginBottom: "20px" }}>
-        ➕ Add Project
-      </button>
+        <button type="button" onClick={addExperience} style={{ marginBottom: "20px" }}>
+          ➕ Add Experience
+        </button>
 
-      <button type="submit" style={{ padding: "10px 20px", background: "#007bff", color: "white", border: "none", borderRadius: "5px", cursor: "pointer" }}>
-        Save Portfolio
-      </button>
-    </form>
+        <h2 id="section-education" style={{ marginTop: "40px" }}>Education</h2>
+        {educations.map((edu, i) => (
+          <div key={i} style={{ border: "1px solid #ddd", padding: 15, marginBottom: 15, borderRadius: "8px" }}>
+            <input
+              name="school"
+              placeholder="School / College Name"
+              value={edu.school}
+              onChange={(e) => handleEducationChange(i, e)}
+              style={inputStyle}
+            />
+            <input
+              name="course"
+              placeholder="Course / Degree"
+              value={edu.course}
+              onChange={(e) => handleEducationChange(i, e)}
+              style={inputStyle}
+            />
+            <input
+              name="year"
+              placeholder="Year (e.g., 2023 to 2026)"
+              value={edu.year}
+              onChange={(e) => handleEducationChange(i, e)}
+              style={inputStyle}
+            />
+            <button
+              type="button"
+              onClick={() => removeEducation(i)}
+              style={{ padding: "5px 10px", background: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+            >
+              ❌ Remove
+            </button>
+          </div>
+        ))}
+
+        <button type="button" onClick={addEducation} style={{ marginBottom: "20px" }}>
+          ➕ Add Education
+        </button>
+
+        <h2 id="section-achievements" style={{ marginTop: "40px" }}>Achievements</h2>
+        {achievements.map((item, i) => (
+          <div key={i} style={{ border: "1px solid #ddd", padding: 15, marginBottom: 15, borderRadius: "8px" }}>
+            <label style={{ display: "block", marginBottom: "5px" }}>Certificate Image:</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => updateAchievementImage(i, e.target.files[0])}
+              style={{ marginBottom: "10px" }}
+            />
+            {(achievementPreviewUrls[i] || item.image) ? (
+              <img
+                src={achievementPreviewUrls[i] || toAssetUrl(item.image)}
+                alt="Achievement preview"
+                style={{ width: "72px", height: "72px", objectFit: "cover", borderRadius: "8px", border: "1px solid #ddd", marginBottom: "10px" }}
+              />
+            ) : null}
+            <input
+              name="title"
+              placeholder="Achievement Title"
+              value={item.title}
+              onChange={(e) => handleAchievementChange(i, e)}
+              style={inputStyle}
+            />
+            <textarea
+              name="description"
+              placeholder="Achievement Description"
+              value={item.description}
+              onChange={(e) => handleAchievementChange(i, e)}
+              style={inputStyle}
+            />
+            <input
+              name="year"
+              placeholder="Year or Date (e.g., 2025 or Jan 2025)"
+              value={item.year}
+              onChange={(e) => handleAchievementChange(i, e)}
+              style={inputStyle}
+            />
+            <input
+              name="link"
+              placeholder="Link URL (Certificate/Proof)"
+              value={item.link}
+              onChange={(e) => handleAchievementChange(i, e)}
+              style={inputStyle}
+            />
+            <button
+              type="button"
+              onClick={() => removeAchievement(i)}
+              style={{ padding: "5px 10px", background: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+            >
+              Remove
+            </button>
+          </div>
+        ))}
+
+        <button type="button" onClick={addAchievement} style={{ marginBottom: "20px" }}>
+          Add Achievement
+        </button>
+
+        <h2 id="section-contact" style={{ marginTop: "40px" }}>Contact</h2>
+        <input name="contactEmail" value={form.contactEmail} onChange={handleChange} placeholder="Contact Email" style={inputStyle} />
+        <input name="contactPhone" value={form.contactPhone} onChange={handleChange} placeholder="Contact Number" style={inputStyle} />
+        <input name="github" value={form.github} onChange={handleChange} placeholder="GitHub Link" style={inputStyle} />
+        <input name="linkedin" value={form.linkedin} onChange={handleChange} placeholder="LinkedIn Link" style={inputStyle} />
+        <textarea name="address" value={form.address} onChange={handleChange} placeholder="Address" style={inputStyle} />
+
+        <button type="submit" style={{ padding: "10px 20px", background: "#007bff", color: "white", border: "none", borderRadius: "5px", cursor: "pointer", width: "100%", marginTop: "20px", fontSize: "16px" }}>
+          Save Portfolio
+        </button>
+      </form>
+    </div>
+
   );
 }
 

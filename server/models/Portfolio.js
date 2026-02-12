@@ -62,6 +62,7 @@ const PortfolioSchema = new mongoose.Schema({
   address: String,
   profilePhoto: String,
   resume: String,
+  adminLoginLink: String,
   projects: [
     {
       title: String,

@@ -12,7 +12,7 @@ const NAV_ITEMS = [
   { id: "contact", label: "Contact" },
 ];
 
-export default function Navbar() {
+export default function Navbar({ data }) {
   const [activeSection, setActiveSection] = useState("home");
   const location = useLocation();
   const navigate = useNavigate();
@@ -82,6 +82,35 @@ export default function Navbar() {
               {n.label}
             </a>
           ))}
+          {data?.adminLoginLink && (
+            <a
+              href={data.adminLoginLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="admin-login-btn"
+              style={{
+                marginLeft: "24px",
+                padding: "8px 16px",
+                background: "#007bff",
+                color: "white",
+                borderRadius: "20px",
+                textDecoration: "none",
+                fontWeight: "600",
+                fontSize: "0.9rem",
+                transition: "transform 0.2s, background-color 0.2s"
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = "translateY(-2px)";
+                e.target.style.backgroundColor = "#0056b3";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = "translateY(0)";
+                e.target.style.backgroundColor = "#007bff";
+              }}
+            >
+              Admin Login
+            </a>
+          )}
         </div>
       </div>
     </nav>
