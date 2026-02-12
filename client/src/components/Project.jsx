@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../api/api";
 import "./Projects.css";
 
 export default function Projects({ data }) {
@@ -15,7 +16,7 @@ export default function Projects({ data }) {
         <div className="projects-grid">
           {data.projects.map((p, i) => (
             <article
-              key={i} 
+              key={i}
               className="project-card-link"
               style={{ "--delay": `${i * 110}ms` }}
               onClick={() => navigate(`/projects/${i}`)}
@@ -33,7 +34,7 @@ export default function Projects({ data }) {
                 {p.image && (
                   <div className="project-media">
                     <img
-                      src={`http://localhost:5000${p.image}`}
+                      src={`${API_BASE_URL}${p.image}`}
                       alt={p.title}
                       className="project-image"
                     />

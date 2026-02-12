@@ -1,5 +1,6 @@
 const fallbackTagline = "Python + AI/ML Builder";
 
+import { API_BASE_URL } from "../api/api";
 export default function Hero({ data }) {
   const staticTagline = (data?.tagline || fallbackTagline).trim();
 
@@ -10,11 +11,11 @@ export default function Hero({ data }) {
   const topSkills = heroSkills.length > 0
     ? heroSkills
     : Array.isArray(data?.skills)
-    ? data.skills.slice(0, 4)
-    : [];
+      ? data.skills.slice(0, 4)
+      : [];
 
-  const profilePhotoUrl = data?.profilePhoto ? `http://localhost:5000${data.profilePhoto}` : "";
-  const resumeUrl = data?.resume ? `http://localhost:5000${data.resume}` : "";
+  const profilePhotoUrl = data?.profilePhoto ? `${API_BASE_URL}${data.profilePhoto}` : "";
+  const resumeUrl = data?.resume ? `${API_BASE_URL}${data.resume}` : "";
 
   return (
     <section id="home">

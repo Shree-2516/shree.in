@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from "react";
+import { API_BASE_URL } from "../api/api";
 import { useNavigate, useParams } from "react-router-dom";
 import "./ProjectDetail.css";
 
@@ -48,7 +49,7 @@ export default function ProjectDetail({ data }) {
         <div className="project-detail-grid">
           <div className="project-detail-media">
             {project.image ? (
-              <img src={`http://localhost:5000${project.image}`} alt={project.title} />
+              <img src={`${API_BASE_URL}${project.image}`} alt={project.title} />
             ) : (
               <div className="project-detail-no-image">No preview image</div>
             )}
