@@ -19,8 +19,8 @@ app.use(cors({
     "http://localhost:5175",
     "http://localhost:5176",
     "http://localhost:3000",
-    "https://your-client.vercel.app",
-    "https://your-admin.vercel.app"
+    "https://shree-in.vercel.app",
+    "https://portfolio-server-9xlp.onrender.com"
   ],
   credentials: true
 }));
