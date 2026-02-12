@@ -12,7 +12,8 @@ dist/
 build/
 
 # ===== SERVER UPLOADS =====
-server/uploads/
+# ===== SERVER UPLOADS =====
+# server/uploads/
 
 # ===== LOG FILES =====
 npm-debug.log*
