@@ -58,11 +58,36 @@ export default function Contact({ data }) {
   });
   const [status, setStatus] = useState("");
   const details = [
-    { label: "Email", value: data?.contactEmail || "", href: formatLink(data?.contactEmail || "", "email") },
-    { label: "Phone", value: data?.contactPhone || "", href: formatLink(data?.contactPhone || "", "phone") },
-    { label: "GitHub", value: data?.github || "", href: formatLink(data?.github || "", "url") },
-    { label: "LinkedIn", value: data?.linkedin || "", href: formatLink(data?.linkedin || "", "url") },
-    { label: "Address", value: data?.address || "", href: "" },
+    {
+      label: "Email",
+      value: data?.contactEmail || "",
+      href: formatLink(data?.contactEmail || "", "email"),
+      displayText: data?.contactEmail ? "Send Email" : "Not added"
+    },
+    {
+      label: "Phone",
+      value: data?.contactPhone || "",
+      href: formatLink(data?.contactPhone || "", "phone"),
+      displayText: data?.contactPhone || "Not added"
+    },
+    {
+      label: "GitHub",
+      value: data?.github || "",
+      href: formatLink(data?.github || "", "url"),
+      displayText: data?.github ? "View GitHub" : "Not added"
+    },
+    {
+      label: "LinkedIn",
+      value: data?.linkedin || "",
+      href: formatLink(data?.linkedin || "", "url"),
+      displayText: data?.linkedin ? "View LinkedIn" : "Not added"
+    },
+    {
+      label: "Address",
+      value: data?.address || "",
+      href: "",
+      displayText: data?.address || "Not added"
+    },
   ];
 
   const handleChange = (e) =>
@@ -131,10 +156,10 @@ export default function Contact({ data }) {
                 </div>
                 {item.href ? (
                   <a href={item.href} target={item.label === "Email" || item.label === "Phone" ? undefined : "_blank"} rel={item.label === "Email" || item.label === "Phone" ? undefined : "noreferrer"}>
-                    {item.value || "Not added"}
+                    {item.displayText}
                   </a>
                 ) : (
-                  <p>{item.value || "Not added"}</p>
+                  <p>{item.displayText}</p>
                 )}
               </div>
             ))}

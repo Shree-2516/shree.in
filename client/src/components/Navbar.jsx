@@ -14,6 +14,7 @@ const NAV_ITEMS = [
 
 export default function Navbar({ data }) {
   const [activeSection, setActiveSection] = useState("home");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -71,12 +72,37 @@ export default function Navbar({ data }) {
       <div className="navbar-inner">
         <div className="brand">Shreeyash Paraj</div>
 
-        <div className="nav-links">
+        {/* Mobile Toggle Button */}
+        <button
+          className="mobile-menu-btn"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          aria-label="Toggle navigation"
+        >
+          {isMobileMenuOpen ? (
+            /* Close Icon */
+            <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          ) : (
+            /* Hamburger Icon */
+            <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          )}
+        </button>
+
+        <div className={`nav-links ${isMobileMenuOpen ? "active" : ""}`}>
           {NAV_ITEMS.map((n) => (
             <a
               key={n.id}
               href={`#${n.id}`}
-              onClick={(e) => handleClick(e, n.id)}
+              onClick={(e) => {
+                handleClick(e, n.id);
+                setIsMobileMenuOpen(false);
+              }}
               className={activeSection === n.id ? "active" : ""}
             >
               {n.label}
