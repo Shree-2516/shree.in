@@ -1767,3 +1767,52 @@ textarea:focus {
     width: clamp(200px, 50vw, 280px);
   }
 }
+
+/* Cursor follower theme style */
+.cursor-follower {
+  position: fixed;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 9999;
+  transition: opacity 180ms ease, transform 180ms ease;
+  will-change: transform, opacity;
+}
+
+.cursor-follower.is-visible {
+  opacity: 1;
+}
+
+.cursor-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.65), 0 0 18px rgba(124, 58, 237, 0.35);
+}
+
+.cursor-ring {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid rgba(124, 58, 237, 0.45);
+  background:
+    radial-gradient(circle at 30% 30%, rgba(124, 58, 237, 0.18), rgba(124, 58, 237, 0)),
+    radial-gradient(circle at 70% 70%, rgba(6, 182, 212, 0.16), rgba(6, 182, 212, 0));
+  box-shadow: 0 0 28px rgba(6, 182, 212, 0.2), inset 0 0 12px rgba(124, 58, 237, 0.14);
+  backdrop-filter: blur(2px);
+}
+
+@media (hover: none),
+(pointer: coarse) {
+  .cursor-follower {
+    display: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cursor-follower {
+    transition: none;
+  }
+}

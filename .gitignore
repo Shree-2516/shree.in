@@ -1,8 +1,12 @@
 # ===== ENV FILES =====
 .env
+.env.*
 server/.env
 client/.env
 admin/.env
+
+# ===== PROJECT FILES (PRIVATE) =====
+PROJECT_REPORT.md
 
 # ===== NODE =====
 node_modules/
@@ -12,8 +16,7 @@ dist/
 build/
 
 # ===== SERVER UPLOADS =====
-# ===== SERVER UPLOADS =====
-# server/uploads/
+server/uploads/
 
 # ===== LOG FILES =====
 npm-debug.log*

@@ -5,8 +5,10 @@ require("dotenv").config();
 const connectDB = require("./config/db");
 const portfolioRoutes = require("./routes/portfolioRoutes");
 const contactRoutes = require("./routes/contactRoutes");
+const chatRoutes = require("./routes/chatRoutes");
 
 const authRoutes = require("./routes/authRoutes");
+
 const { protect } = require("./middleware/authMiddleware");
 
 const app = express();
@@ -37,6 +39,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/portfolio", portfolioRoutes);
 app.use("/uploads", express.static("uploads"));
 app.use("/api/contact", contactRoutes);
+app.use("/api/chat", chatRoutes);
 app.get("/", (req, res) => {
   res.send("API is running...");
 });

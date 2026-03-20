@@ -12,17 +12,34 @@ import Achievements from "./components/Achievements";
 import Projects from "./components/Project";
 import Contact from "./components/Contact";
 import Education from "./components/Education";
+import Chatbot from "./components/Chatbot";
+import CursorFollower from "./components/CursorFollower";
 
 // Page Import for Details
 import ProjectDetail from "./components/ProjectDetail";
 
 function App() {
   const [data, setData] = useState(null);
+  const [loadError, setLoadError] = useState("");
   const location = useLocation();
   const didHandleInitialReload = useRef(false);
 
   useEffect(() => {
-    fetchPortfolio().then((res) => setData(res.data));
+    let isMounted = true;
+
+    fetchPortfolio()
+      .then((res) => {
+        if (!isMounted) return;
+        setData(res.data);
+      })
+      .catch(() => {
+        if (!isMounted) return;
+        setLoadError("Unable to load portfolio data. Please start the backend or set VITE_API_URL.");
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -57,6 +74,7 @@ function App() {
     return () => clearTimeout(timer);
   }, [location.pathname, location.hash, data]);
 
+  if (loadError) return <p>{loadError}</p>;
   if (!data) return <p>Loading...</p>;
 
   const homePage = (
@@ -74,6 +92,7 @@ function App() {
 
   return (
     <div className="site-wrap">
+      <CursorFollower />
       <Navbar data={data} />
 
       <Routes>
@@ -88,6 +107,7 @@ function App() {
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <Chatbot />
     </div>
   );
 }
